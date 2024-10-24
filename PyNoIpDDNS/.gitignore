@@ -1,0 +1,87 @@
+# Byte-compiled Dateien
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / Packaging
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-wheel-metadata/
+*.whl
+
+# Virtuelle Umgebungen
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Setuptools Überschüsse
+*.manifest
+*.spec
+
+# Unit Test / Coverage Berichte
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# PyCharm Dateien
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints
+
+# IDE spezifische Einstellungen
+.vscode/
+
+# Log Dateien
+*.log
+
+# Betriebssystem Dateien
+.DS_Store
+Thumbs.db
+
+# Sonstige Python-Umgebungen
+.pyenv/
+.python-version
+
+# Cython Dateien
+*.c
+*.so
+
+# Meinepycache
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Profiling
+profiler/
+
+# Linting Dateien
+.pyre/
+.pytype/
+
+# Docker
+*.pid
