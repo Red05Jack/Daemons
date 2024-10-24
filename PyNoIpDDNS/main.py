@@ -1,66 +1,108 @@
+from math import trunc
+
 import requests
 from requests.auth import HTTPBasicAuth
 import json
+import os
+import platform
+import time
 
 
-# Funktion zum Laden der Konfiguration aus einer JSON-Datei
+# Function to perform a ping to a specific host.
+def ping(host):
+    system_name = platform.system().lower()
+
+    if system_name == "windows":
+        # Windows uses -n for the number of pings, -w for timeout in milliseconds
+        param = '-n 1 -w 1000'
+    else:
+        # Linux/macOS use -c for the number of pings, -W for timeout in seconds
+        param = '-c 1 -W 1'
+
+    command = f"ping {param} {host}"
+
+    # Execute the command and check the return value
+    response = os.system(command)
+
+    # If the return value is 0, the ping was successful (target reachable)
+    if response == 0:
+        return True
+    else:
+        return False
+
+
+# Function to load configuration from a JSON file
 def load_config(file_path="config.json"):
     try:
         with open(file_path, 'r') as config_file:
             config = json.load(config_file)
         return config
     except FileNotFoundError:
-        print(f"Die Konfigurationsdatei '{file_path}' wurde nicht gefunden.")
+        print(f"The configuration file '{file_path}' was not found.")
         return None
     except json.JSONDecodeError:
-        print(f"Fehler beim Lesen der JSON-Datei '{file_path}'.")
+        print(f"Error reading the JSON file '{file_path}'.")
         return None
 
 
-# Funktion zum Abrufen der öffentlichen IP-Adresse
+# Function to get the public IP address
 def get_public_ip():
     try:
-        # Externe Dienstleistung zum Abrufen der öffentlichen IP
+        # External service to get the public IP address
         ip = requests.get('https://api.ipify.org').text
         return ip
     except requests.RequestException as e:
-        print(f"Fehler beim Abrufen der IP: {e}")
+        print(f"Error fetching the IP address: {e}")
         return None
 
 
-# Funktion zum Aktualisieren des No-IP DDNS-Eintrags
+# Function to update the No-IP DDNS entry
 def update_no_ip(username, password, hostname):
     ip_address = get_public_ip()
 
     if ip_address:
         try:
-            # URL von No-IP für das DDNS-Update
+            # No-IP URL for DDNS update
             update_url = f"https://dynupdate.no-ip.com/nic/update?hostname={hostname}&myip={ip_address}"
 
-            # Anfrage zum Aktualisieren der IP senden
+            # Send request to update the IP address
             response = requests.get(update_url, auth=HTTPBasicAuth(username, password))
 
-            # Rückmeldung von No-IP
+            # Response from No-IP
             if response.status_code == 200:
-                print(f"DDNS-Update erfolgreich: {response.text}")
+                print(f"DDNS update successful: {response.text}")
             else:
-                print(f"Fehler beim Aktualisieren des DNS-Eintrags: {response.text}")
+                print(f"Error updating the DNS entry: {response.text}")
         except requests.RequestException as e:
-            print(f"Fehler beim Senden der Update-Anfrage: {e}")
+            print(f"Error sending the update request: {e}")
     else:
-        print("Keine IP-Adresse verfügbar, Update nicht möglich.")
+        print("No IP address available, update not possible.")
 
 
-# Skript ausführen
 if __name__ == "__main__":
-    # Konfiguration aus JSON laden
     config = load_config("config.json")
+    need_update = False
+    is_connected = False
 
     if config:
-        # Anmeldeinformationen und Hostnamen aus der JSON-Konfigurationsdatei holen
-        no_ip_username = config["noip"]["username"]
-        no_ip_password = config["noip"]["password"]
-        hostname = config["noip"]["hostname"]
+        while True:
+            try:
+                if need_update:
+                    update_no_ip(
+                        username=config["noip"]["username"],
+                        password=config["noip"]["password"],
+                        hostname=config["noip"]["hostname"]
+                    )
+                    need_update = False
 
-        # No-IP DDNS-Update durchführen
-        update_no_ip(no_ip_username, no_ip_password, hostname)
+                if ping("www.google.com") and ping("www.noip.com"):
+                    if not is_connected:
+                        need_update = True
+                    is_connected = True
+                else:
+                    is_connected = False
+
+                time.sleep(5)
+            except KeyboardInterrupt:
+                print("Script terminated.")
+                break
