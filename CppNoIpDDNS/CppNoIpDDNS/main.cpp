@@ -5,6 +5,6 @@
 
 // Main
 int main() {
-	NoIpDDNS ddns = NoIpDDNS();
+	NoIpDDNS ddns = NoIpDDNS(".\\config.json");
 	ddns.Start();
 }
